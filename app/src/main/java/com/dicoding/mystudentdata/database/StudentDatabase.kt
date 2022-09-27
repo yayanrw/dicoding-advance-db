@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import kotlinx.coroutines.CoroutineScope
 
 @Database(
     entities = [
@@ -23,7 +22,7 @@ abstract class StudentDatabase : RoomDatabase() {
         private var INSTANCE: StudentDatabase? = null
 
         @JvmStatic
-        fun getDatabase(context: Context, applicationScope: CoroutineScope): StudentDatabase {
+        fun getDatabase(context: Context): StudentDatabase {
             if (INSTANCE == null) {
                 synchronized(StudentDatabase::class.java) {
                     INSTANCE = Room.databaseBuilder(
