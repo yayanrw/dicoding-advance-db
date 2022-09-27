@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dicoding.mystudentdata.adapter.StudentAndUniversityAdapter
 import com.dicoding.mystudentdata.adapter.StudentListAdapter
+import com.dicoding.mystudentdata.adapter.StudentWithCourseAdapter
 import com.dicoding.mystudentdata.adapter.UniversityAndStudentAdapter
 import com.dicoding.mystudentdata.databinding.ActivityMainBinding
 
@@ -86,7 +87,12 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun getStudentWithCourse() {
-
+        val adapter = StudentWithCourseAdapter()
+        binding.rvStudent.adapter = adapter
+        mainViewModel.getAllStudentWithCourse().observe(this) {
+            Log.d(TAG, "getStudentWithCourse: $it")
+            adapter.submitList(it)
+        }
     }
 
     companion object {

@@ -5,7 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Student::class, University::class, Course::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        Student::class,
+        University::class,
+        Course::class,
+        CourseStudentCrossRef::class
+    ], version = 1, exportSchema = false
+)
 abstract class StudentDatabase : RoomDatabase() {
 
     abstract fun studentDao(): StudentDao
@@ -18,8 +25,10 @@ abstract class StudentDatabase : RoomDatabase() {
         fun getDatabase(context: Context): StudentDatabase {
             if (INSTANCE == null) {
                 synchronized(StudentDatabase::class.java) {
-                    INSTANCE = Room.databaseBuilder(context.applicationContext,
-                            StudentDatabase::class.java, "student_database")
+                    INSTANCE = Room.databaseBuilder(
+                        context.applicationContext,
+                        StudentDatabase::class.java, "student_database"
+                    )
                         .fallbackToDestructiveMigration()
                         .build()
                 }
