@@ -1,9 +1,12 @@
 package com.dicoding.mystudentdata.database
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.*
+import androidx.room.migration.AutoMigrationSpec
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.dicoding.mystudentdata.helper.InitialDataSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Database(
     entities = [
@@ -11,9 +14,21 @@ import androidx.room.RoomDatabase
         University::class,
         Course::class,
         CourseStudentCrossRef::class
-    ], version = 1, exportSchema = false
+    ],
+    version = 2,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2, spec = StudentDatabase.MyAutoMigration::class),
+    ],
+    exportSchema = true
 )
 abstract class StudentDatabase : RoomDatabase() {
+
+    @RenameColumn(
+        tableName = "University",
+        fromColumnName = "name",
+        toColumnName = "universityName"
+    )
+    class MyAutoMigration : AutoMigrationSpec
 
     abstract fun studentDao(): StudentDao
 
@@ -22,7 +37,7 @@ abstract class StudentDatabase : RoomDatabase() {
         private var INSTANCE: StudentDatabase? = null
 
         @JvmStatic
-        fun getDatabase(context: Context): StudentDatabase {
+        fun getDatabase(context: Context, applicationScope: CoroutineScope): StudentDatabase {
             if (INSTANCE == null) {
                 synchronized(StudentDatabase::class.java) {
                     INSTANCE = Room.databaseBuilder(
@@ -30,21 +45,20 @@ abstract class StudentDatabase : RoomDatabase() {
                         StudentDatabase::class.java, "student_database"
                     )
                         .fallbackToDestructiveMigration()
-                        .createFromAsset("com_dicoding_mystudent.db")
-//                        .addCallback(object : Callback() {
-//                            override fun onCreate(db: SupportSQLiteDatabase) {
-//                                super.onCreate(db)
-//                                INSTANCE?.let { database ->
-//                                    applicationScope.launch {
-//                                        val studentDao = database.studentDao()
-//                                        studentDao.insertStudent(InitialDataSource.getStudents())
-//                                        studentDao.insertUniversity(InitialDataSource.getUniversities())
-//                                        studentDao.insertCourse(InitialDataSource.getCourses())
-//                                        studentDao.insertCourseStudentCrossRef(InitialDataSource.getCourseStudentRelation())
-//                                    }
-//                                }
-//                            }
-//                        })
+                        .addCallback(object : Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+                                INSTANCE?.let { database ->
+                                    applicationScope.launch {
+                                        val studentDao = database.studentDao()
+                                        studentDao.insertStudent(InitialDataSource.getStudents())
+                                        studentDao.insertUniversity(InitialDataSource.getUniversities())
+                                        studentDao.insertCourse(InitialDataSource.getCourses())
+                                        studentDao.insertCourseStudentCrossRef(InitialDataSource.getCourseStudentRelation())
+                                    }
+                                }
+                            }
+                        })
                         .build()
                 }
             }
